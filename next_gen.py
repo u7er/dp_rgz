@@ -162,14 +162,11 @@ def generate_rsa_vars(maxi):
     while gcd(d, fi) != 1:
         d += 1
     c = gcd_extended(d, fi)[2]
-
-    # print "C & FI:", gcd(c, fi)
     if c < 0:
         c = c + fi
 
     rsa_vars.append(c)
     rsa_vars.append(d)
-    # print (c * d) % fi
     # P Q N C D
     return rsa_vars
 
@@ -180,13 +177,10 @@ def bitExtracted(number, k, p):
 
 def mspa(col_val, max_colors):
     for i in range(0, 5 * len(nx.to_edgelist(G)), 1):
-        # print "---===== TEST =====---"
-        # colors for our graph
         colors = [i for i in range(max_colors)]
         # shuffle colors
         random.shuffle(colors)
         col_val_shuffle = dict(col_val)
-        bits_color = {}
 
         # Alice
         # shuffle our dictionary
@@ -194,36 +188,20 @@ def mspa(col_val, max_colors):
         for key in col_val_shuffle:
             col_val_shuffle[key] = colors[col_val_shuffle[key]]
 
-        # print col_val_shuffle
         # Alice
         # Generate Ri, shift and change two last bits in sequence on color vertex
         # (for history: # numb_vertex = {key: ((numb_vertex[key] << 2) | col_val_shuffle[key]) for key in numb_vertex})
-
         R = {key: (((random.getrandbits(31)) << 2) | col_val_shuffle[key]) for key in col_val_shuffle}
-        # print "R: ", R
-        # Alice                  (0,1,2,3,4)
-        # Generate RSA variables (P,Q,N,C,D)
-        # print "rsa"
         rsa_var = {key: generate_rsa_vars(20) for key in col_val_shuffle}
-        # for it in rsa_var:
-        #   print rsa_var[it]
-        #   print "GCD PQ: ", gcd(rsa_var[it][0], rsa_var[it][1]), "\nN: ", rsa_var[it][2], ' ', rsa_var[it][1] * rsa_var[it][0]
-        # print rsa_var
         # Alice
         # Processing Zv = Rv^Dv % Nv per vertex
         Z = {key: powd(R[key], rsa_var[key][4], rsa_var[key][2]) for key in col_val_shuffle}
-        # print Z
         # Move to Bob Nv Dv Zv
         ndz = {key: [rsa_var[key][2], rsa_var[key][4], Z[key]] for key in col_val_shuffle}
-        # print "ndz: ", ndz
-        # Step 5
         # Get edges from our graph G
         edges = nx.to_edgelist(G)
-
         # Bob pick one random edge and sent him to Alice
-
         bob_rand_edges = list(edges)[random.randint(0, len(list(edges)) - 1)]
-        # print bob_rand_edges
         # Bob saying to Alice what edges he picked
         # Hi, i'm picked that edges: bob_rand_edges
 
@@ -237,22 +215,10 @@ def mspa(col_val, max_colors):
         # print Cv1, " | ", Cv2
 
         # Bob processing Zv1 & Zv2
-        # print "Zvi"
-        # print ndz[rand_edge_from_bob[0]][2]
-        # print Cv1
-        # print ndz[rand_edge_from_bob[0]][0]
-
-        Zv1 = powd(ndz[rand_edge_from_bob[0]][2], Cv1,
-                   ndz[rand_edge_from_bob[0]][0])  # rsa_var[rand_edge_from_bob[0]][2]
-        Zv2 = powd(Z[rand_edge_from_bob[1]], Cv2, ndz[rand_edge_from_bob[1]][0])
-
-        # print "Zv1 | Zv2: ", Zv1, " | ", Zv2
-        # print "Rv1 | Rv2: ", R[rand_edge_from_bob[0]], " | ", R[rand_edge_from_bob[1]]
-
-        fcol = Zv1 & 3  # bitExtracted(Zv1, 2, 2)
-        scol = Zv2 & 3  # bitExtracted(Zv2, 2, 2)
-        # print "fcol: ", fcol
-        # print "scol: ", scol
+        Zv1 = powd(ndz[rand_edge_from_bob[0]][2], Cv1, ndz[rand_edge_from_bob[0]][0])
+        Zv2 = powd(ndz[rand_edge_from_bob[1]][2], Cv2, ndz[rand_edge_from_bob[1]][0])
+        fcol = Zv1 & 3  # extract first three bits
+        scol = Zv2 & 3  # extract first three bits
 
         if fcol == scol:
             print rand_edge_from_bob[0], ' ', rand_edge_from_bob[1]
@@ -263,17 +229,15 @@ def mspa(col_val, max_colors):
             print "Alice obmanula Bob's"
             return
 
-    # print ndz[rand_edge_from_bob[0]][0], ndz[rand_edge_from_bob[1]][0]
-
-
-# main function
 if __name__ == "__main__":
+    # how many we needed generate graph
     variants = 1
     col_val = 0
 
     for i in range(variants):
+        # If you want to generate random graph,
+        # use flag False in first parameter in function CreateGraph
         G = CreateGraph(True, 30, 30)
-        # print G.get_edge_data(3, 4)
         col_val = welsh_powell(G)
         index_max_color = max(col_val, key=col_val.get)  # Just use 'min' instead of 'max' for minimum.
         max_colors = col_val[index_max_color] + 1
@@ -284,7 +248,6 @@ if __name__ == "__main__":
         else:
             mspa(col_val, max_colors)
             print("Oh yea, graph is could be colored in 3 colors")
-        # print(++col_val[maximum])
-    if variants != 1:
+    if variants == 1:
         DrawGraph(G, col_val)
         plt.show()
