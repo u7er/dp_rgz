@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import random
 import math
 
-
 # implementation of welsh_powell algorithm
 def welsh_powell(G):
     # sorting the nodes based on it's valency
