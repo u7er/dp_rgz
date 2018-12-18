@@ -50,11 +50,11 @@ def CreateGraph(our, fr, to):
             graph_edge_list.append(graph_edge[0])
             graph_edge_list.append(graph_edge[1])
     else:
+        G = nx.balanced_tree(2, 5)
         # G = nx.random_geometric_graph(random.randint(fr, to), 0.2, p=1, seed=random.randint(1, 10))
         # G = nx.lollipop_graph(random.randint(fr, to), to)
         # G = nx.full_rary_tree(10, 40)
-        G = nx.balanced_tree(2, 5)
-    # G = nx.grid_2d_graph(fr, to)
+        # G = nx.grid_2d_graph(fr, to)
 
     return G
 
@@ -175,7 +175,7 @@ def bitExtracted(number, k, p):
 
 
 def mspa(col_val, max_colors):
-    for i in range(0, 5 * len(nx.to_edgelist(G)), 1):
+    for i in range(0, 5 * len(nx.to_edgelist(G)), 1):  #
         colors = [i for i in range(max_colors)]
         # shuffle colors
         random.shuffle(colors)
@@ -225,8 +225,10 @@ def mspa(col_val, max_colors):
                 print R[key] & 3
             print fcol
             print col_val_shuffle
-            print "Alice obmanula Bob's"
+            print "Alice tricked Bob"
             return
+    print "Alice did not lie"
+
 
 if __name__ == "__main__":
     # how many we needed generate graph
@@ -236,7 +238,8 @@ if __name__ == "__main__":
     for i in range(variants):
         # If you want to generate random graph,
         # use flag False in first parameter in function CreateGraph
-        G = CreateGraph(True, 30, 30)
+        # G = CreateGraph(False, 30, 30)
+        G = nx.balanced_tree(2, 5)
         col_val = welsh_powell(G)
         index_max_color = max(col_val, key=col_val.get)  # Just use 'min' instead of 'max' for minimum.
         max_colors = col_val[index_max_color] + 1
@@ -246,7 +249,7 @@ if __name__ == "__main__":
             continue
         else:
             mspa(col_val, max_colors)
-            print("Oh yea, graph is could be colored in 3 colors")
+            # print("Oh yea, graph is could be colored in 3 colors")
     if variants == 1:
         DrawGraph(G, col_val)
         plt.show()
